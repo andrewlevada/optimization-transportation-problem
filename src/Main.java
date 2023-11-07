@@ -3,3 +3,7 @@ public class Main {
         System.out.print("hello");
     }
 }
+
+interface Algorithm {
+    int[] solve(int[] supply, int[] demand, int[][] costs);
+}
