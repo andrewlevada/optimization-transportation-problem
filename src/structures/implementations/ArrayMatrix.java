@@ -9,7 +9,7 @@ import structures.Vector;
 public class ArrayMatrix implements Matrix {
     private final int rows;
     private final int cols;
-    private final double[][] values;
+    private final int[][] values;
 
     /**
      * Matrix constructor (sets all elements to 0)
@@ -19,7 +19,7 @@ public class ArrayMatrix implements Matrix {
     public ArrayMatrix(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
-        this.values = new double[rows][cols];
+        this.values = new int[rows][cols];
 
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < cols; j++)
@@ -55,78 +55,7 @@ public class ArrayMatrix implements Matrix {
         if (this.rows != other.getNumberOfRows() || this.cols != other.getNumberOfColumns())
             throw new IllegalArgumentException();
 
-        return this.plus(other.scalarMultiply(-1));
-    }
-
-    /**
-     * Function for multiplying a matrix by a scalar
-     * @param scalar is a scalar by which matrix is to be multiplied
-     * @return result of scalar multiplication
-     */
-    @Override
-    public Matrix scalarMultiply(double scalar) {
-        Matrix result = new ArrayMatrix(this.rows, this.cols);
-
-        for (int i = 0; i < this.rows; i++)
-            for (int j = 0; j < this.cols; j++)
-                result.setItem(i, j, this.values[i][j] * scalar);
-
-        return result;
-    }
-
-    /**
-     * Function for multiplying a matrix by another matrix
-     * @param other is a matrix by which source matrix is to be multiplied
-     * @return result of matrix multiplication
-     */
-    @Override
-    public Matrix multiply(Matrix other) {
-        if (this.cols != other.getNumberOfRows())
-            throw new IllegalArgumentException();
-
-        Matrix result = new ArrayMatrix(this.rows, other.getNumberOfColumns());
-
-        for (int i = 0; i < this.rows; i++)
-            for (int j = 0; j < other.getNumberOfColumns(); j++)
-                for (int k = 0; k < this.cols; k++)
-                    result.setItem(i, j, result.getItem(i, j) + this.values[i][k] * other.getItem(k, j));
-
-        return result;
-    }
-
-    /**
-     * Function for multiplying a matrix by vector
-     * @param vector is a vector by which source matrix is to be multiplied
-     * @return result of multiplication
-     */
-    @Override
-    public Vector multiplyByVector(Vector vector) {
-        if (this.cols != vector.getLength())
-            throw new IllegalArgumentException();
-
-        // Treating the vector as a column vector
-        Vector result = new ArrayVector(this.rows);
-
-        for (int i = 0; i < this.rows; i++)
-            for (int j = 0; j < this.cols; j++)
-                result.setItem(i, result.getItem(i) + this.values[i][j] * vector.getItem(j));
-
-        return result;
-    }
-
-    /**
-     * Function for matrix transposition
-     * @return transposed matrix
-     */
-    @Override
-    public Matrix getTransposed() {
-        Matrix result = new ArrayMatrix(this.cols, this.rows);
-
-        for (int i = 0; i < this.cols; i++)
-            for (int j = 0; j < this.rows; j++)
-                result.setItem(i, j, this.values[j][i]);
-
-        return result;
+        return this.plus(scalarMultiply(other, -1));
     }
 
     /**
@@ -136,7 +65,7 @@ public class ArrayMatrix implements Matrix {
      * @return the specific element
      */
     @Override
-    public double getItem(int row, int col) {
+    public int getItem(int row, int col) {
         if (row >= this.rows || col >= this.cols || row < 0 || col < 0)
             throw new IndexOutOfBoundsException();
 
@@ -161,7 +90,7 @@ public class ArrayMatrix implements Matrix {
         Vector v = new ArrayVector(this.cols);
 
         for (int i = 0; i < this.cols; i++)
-            v.setItem(i, this.values[row][i]);
+            v.set(i, this.values[row][i]);
 
         return v;
     }
@@ -174,13 +103,13 @@ public class ArrayMatrix implements Matrix {
         Vector v = new ArrayVector(this.rows);
 
         for (int i = 0; i < this.rows; i++)
-            v.setItem(i, this.values[i][col]);
+            v.set(i, this.values[i][col]);
 
         return v;
     }
 
     @Override
-    public void setItem(int row, int col, double value) {
+    public void setItem(int row, int col, int value) {
         if (row >= this.rows || col >= this.cols || row < 0 || col < 0)
             throw new IndexOutOfBoundsException();
 
@@ -196,7 +125,7 @@ public class ArrayMatrix implements Matrix {
             throw new IndexOutOfBoundsException();
 
         for (int i = 0; i < this.cols; i++)
-            this.values[row][i] = vector.getItem(i);
+            this.values[row][i] = vector.get(i);
     }
 
     @Override
@@ -208,31 +137,76 @@ public class ArrayMatrix implements Matrix {
             throw new IndexOutOfBoundsException();
 
         for (int i = 0; i < this.rows; i++)
-            this.values[i][col] = vector.getItem(i);
+            this.values[i][col] = vector.get(i);
     }
 
     @Override
-    public void print() {
-        for (int i = 0; i < this.rows; i++) {
-            System.out.print("| ");
+    public int getIndexOfMinInRow(int row) {
+        int minIndex = 0;
 
-            for (int j = 0; j < this.cols; j++)
-                System.out.printf("%f ", this.values[i][j]);
+        for (int i = 1; i < this.cols; i++)
+            if (this.values[row][i] < this.values[row][minIndex])
+                minIndex = i;
 
-            System.out.println("|");
-        }
+        return minIndex;
     }
 
-    /**
-     * Method for changing an identity matrix D for it to contain current point as its diagonal
-     * @param vector current point coordinates
-     */
     @Override
-    public void seatDiagonal(Vector vector) {
-        if (vector.getLength() != this.rows)
-            throw new IllegalArgumentException();
+    public int getIndexOfMaxInRow(int row) {
+        int maxIndex = 0;
+
+        for (int i = 1; i < this.cols; i++)
+            if (this.values[row][i] > this.values[row][maxIndex])
+                maxIndex = i;
+
+        return maxIndex;
+    }
+
+    @Override
+    public int getIndexOfMinInColumn(int col) {
+        int minIndex = 0;
+
+        for (int i = 1; i < this.rows; i++)
+            if (this.values[i][col] < this.values[minIndex][col])
+                minIndex = i;
+
+        return minIndex;
+    }
+
+    @Override
+    public int getIndexOfMaxInColumn(int col) {
+        int maxIndex = 0;
+
+        for (int i = 1; i < this.rows; i++)
+            if (this.values[i][col] > this.values[maxIndex][col])
+                maxIndex = i;
+
+        return maxIndex;
+    }
+
+    @Override
+    public int[] getCoordsOfMostNegative() {
+        int[] coords = new int[2];
+        int min = this.values[0][0];
 
         for (int i = 0; i < this.rows; i++)
-            this.values[i][i] = vector.getItem(i);
+            for (int j = 0; j < this.cols; j++)
+                if (this.values[i][j] < min) {
+                    min = this.values[i][j];
+                    coords[0] = i;
+                    coords[1] = j;
+                }
+
+        return coords;
+    }
+
+    private static Matrix scalarMultiply(Matrix matrix, int scalar) {
+        Matrix result = new ArrayMatrix(matrix.getNumberOfRows(), matrix.getNumberOfColumns());
+
+        for (int i = 0; i < matrix.getNumberOfRows(); i++)
+            for (int j = 0; j < matrix.getNumberOfColumns(); j++)
+                result.setItem(i, j, matrix.getItem(i, j) * scalar);
+
+        return result;
     }
 }

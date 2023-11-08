@@ -1,17 +1,16 @@
 package structures.implementations;
 
-import structures.Matrix;
 import structures.Vector;
 
 import java.util.Iterator;
 
 public class ArrayVector implements Vector {
     private final int length;
-    private final double[] values;
+    private final int[] values;
 
     public ArrayVector(int length) {
         this.length = length;
-        this.values = new double[length];
+        this.values = new int[length];
 
         for (int i = 0; i < length; i++)
             this.values[i] = 0;
@@ -25,7 +24,7 @@ public class ArrayVector implements Vector {
         Vector result = new ArrayVector(this.length);
 
         for (int i = 0; i < this.length; i++)
-            result.setItem(i, this.values[i] + other.getItem(i));
+            result.set(i, this.values[i] + other.get(i));
 
         return result;
     }
@@ -35,53 +34,11 @@ public class ArrayVector implements Vector {
         if (this.length != other.getLength())
             throw new IllegalArgumentException();
 
-        return this.plus(other.scalarMultiply(-1));
+        return this.plus(scalarMultiply(other, -1));
     }
 
     @Override
-    public Vector scalarMultiply(double scalar) {
-        Vector result = new ArrayVector(this.length);
-
-        for (int i = 0; i < this.length; i++)
-            result.setItem(i, this.values[i] * scalar);
-
-        return result;
-    }
-
-    @Override
-    public double dotProduct(Vector vector) {
-        if (this.length != vector.getLength())
-            throw new IllegalArgumentException();
-
-        double result = 0;
-
-        for (int i = 0; i < this.length; i++)
-            result += this.values[i] * vector.getItem(i);
-
-        return result;
-    }
-
-    @Override
-    public Vector multiply(Matrix matrix) {
-        if (this.length != matrix.getNumberOfRows())
-            throw new IllegalArgumentException();
-
-        Vector result = new ArrayVector(matrix.getNumberOfColumns());
-
-        for (int i = 0; i < matrix.getNumberOfColumns(); i++) {
-            double sum = 0;
-
-            for (int j = 0; j < this.length; j++)
-                sum += this.values[j] * matrix.getItem(j, i);
-
-            result.setItem(i, sum);
-        }
-
-        return result;
-    }
-
-    @Override
-    public double getItem(int index) {
+    public int get(int index) {
         if (index < 0 || index >= length)
             throw new IndexOutOfBoundsException();
 
@@ -89,7 +46,7 @@ public class ArrayVector implements Vector {
     }
 
     @Override
-    public void setItem(int index, double value) {
+    public void set(int index, int value) {
         if (index < 0 || index >= length)
             throw new IndexOutOfBoundsException();
 
@@ -102,8 +59,30 @@ public class ArrayVector implements Vector {
     }
 
     @Override
-    public Iterator<Double> iterator() {
-        return new Iterator<Double>() {
+    public int getMinValueIndex() {
+        int minIndex = 0;
+
+        for (int i = 1; i < length; i++)
+            if (values[i] < values[minIndex])
+                minIndex = i;
+
+        return minIndex;
+    }
+
+    @Override
+    public int getMaxValueIndex() {
+        int maxIndex = 0;
+
+        for (int i = 1; i < length; i++)
+            if (values[i] > values[maxIndex])
+                maxIndex = i;
+
+        return maxIndex;
+    }
+
+    @Override
+    public Iterator<Integer> iterator() {
+        return new Iterator<>() {
             private int index = 0;
 
             @Override
@@ -112,78 +91,19 @@ public class ArrayVector implements Vector {
             }
 
             @Override
-            public Double next() {
+            public Integer next() {
                 return values[index++];
             }
         };
     }
 
-    @Override
-    public void print() {
-        for (int i = 0; i < this.length; i++)
-            System.out.print(this.values[i] + " ");
-        System.out.println();
-    }
+    private static Vector scalarMultiply(Vector vector, int scalar) {
+        Vector result = new ArrayVector(vector.getLength());
 
-    /**
-     * Checks if two vectors are equal
-     * @param other is the second vector
-     * @return true if they are equal, false otherwise
-     */
-    @Override
-    public boolean equals(Vector other) {
-        if (this.length != other.getLength())
-            return false;
+        for (int i = 0; i < vector.getLength(); i++)
+            result.set(i, vector.get(i) * scalar);
 
-        for (int i = 0; i < this.length; i++)
-            if (this.values[i] != other.getItem(i))
-                return false;
-
-        return true;
-    }
-
-    /**
-     * Method calculates the norm of vector
-     * @return the norm
-     */
-    @Override
-    public double getNorm() {
-        double sum = 0;
-
-        for (int i = 0; i < this.length; i++)
-            sum += this.values[i] * this.values[i];
-
-        return Math.sqrt(sum);
-    }
-
-    /**
-     * Method counts number of zeros in the vector
-     * @return amount of 0s
-     */
-    @Override
-    public int getNumberOfZeroElements() {
-        int count = 0;
-
-        for (int i = 0; i < this.length; i++)
-            if (this.values[i] == 0)
-                count++;
-
-        return count;
-    }
-
-    /**
-     * Method determines the minimal element in the vector
-     * @return minimal element
-     */
-    @Override
-    public double findMinValue() {
-        double min = 1000000000;
-
-        for (int i = 0; i < this.length; i++)
-            if (this.values[i] < min)
-                min = this.values[i];
-
-        return min;
+        return result;
     }
 
 }

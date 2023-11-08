@@ -13,12 +13,12 @@ public class MatrixFactory {
         Matrix matrix = new ArrayMatrix(size, size);
 
         for (int i = 0; i < size; i++)
-            matrix.setItem(i, i, 1.0);
+            matrix.setItem(i, i, 1);
 
         return matrix;
     }
 
-    public static Matrix createMatrix(double[][] items) {
+    public static Matrix createMatrix(int[][] items) {
         int n = items.length;
         int m = items[0].length;
 
@@ -57,7 +57,7 @@ public class MatrixFactory {
 
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < cols; j++)
-                matrix.setItem(i, j, scanner.nextDouble());
+                matrix.setItem(i, j, scanner.nextInt());
 
         return matrix;
     }
