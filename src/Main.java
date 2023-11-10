@@ -14,6 +14,8 @@ public class Main {
         TransportationProblem solver = input();
         if (solver == null) return;
 
+        solver.printTransportationTable();
+
         Algorithm northWestAlgorithm = new NorthWest();
         Algorithm vogelAlgorithm = new VogelAlgorithm();
         Algorithm russelAlgorithm = new RusselAlgorithm();
@@ -36,7 +38,7 @@ public class Main {
             System.out.println("Enter a vector of coefficients of supply (S):");
             Vector supply = VectorFactory.createVectorFromInput(numberOfSources, scanner);
             System.out.println("Enter a matrix of coefficients of costs (C):");
-            Matrix costs = MatrixFactory.createMatrixFromInput(numberOfDestinations, numberOfSources, scanner);
+            Matrix costs = MatrixFactory.createMatrixFromInput(numberOfSources, numberOfDestinations, scanner);
             System.out.println("Enter a vector of coefficients of demand (D):");
             Vector demand = VectorFactory.createVectorFromInput(numberOfDestinations, scanner);
 
@@ -106,6 +108,43 @@ class TransportationProblem {
     public void setAlgorithm(Algorithm algorithm) {
         this.algorithm = algorithm;
     }
+
+    public void printTransportationTable() {
+        if (costs == null || supply == null || demand == null) {
+            throw new IllegalStateException("Cost matrix, supply vector, and demand vector must be set before printing the table.");
+        }
+
+        // Print table header
+        System.out.println("---------------------------------------------------------------");
+        System.out.printf("%11s %30s %9s %10s%n", "|", "Cost Per Unit Distributed", "|", "|");
+        System.out.printf("%52s %10s%n", "|----------------------------------------|", "|");
+        System.out.printf("%11s %23s %16s %10s%n", "|", "Destination", "|", "|");
+        System.out.printf("%52s %10s%n", "|----------------------------------------|", "|");
+        System.out.printf("%11s %9s %9s %9s %9s| %10s%n", "|", "1", "2", "3", "4", "Supply  |");
+        System.out.println("----------|----------------------------------------|----------|");
+
+
+        // Print cost matrix and supply vector
+        for (int i = 0; i < costs.getNumberOfRows(); i++) {
+            if (i == 1) System.out.printf("%10s|", "Source  " + (i + 1));
+            else System.out.printf("%10s|", i + 1);
+            for (int j = 0; j < costs.getNumberOfColumns(); j++) {
+                System.out.printf("%10s", costs.getItem(i, j));
+            }
+            System.out.print("|");
+            System.out.printf("%10s|%n", supply.get(i));
+        }
+
+        // Print demand vector
+        System.out.println("----------|----------------------------------------|----------|");
+        System.out.printf("%10s|", "Demand   ");
+        for (int i = 0; i < costs.getNumberOfColumns(); i++) {
+            System.out.printf("%10s", demand.get(i));
+        }
+        System.out.printf("|%11s%n", "|");
+        System.out.println("---------------------------------------------------------------");
+    }
+
 }
 
 class NorthWest implements Algorithm {
