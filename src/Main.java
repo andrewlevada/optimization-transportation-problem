@@ -16,17 +16,19 @@ public class Main {
 
         solver.printTransportationTable();
 
-        Algorithm northWestAlgorithm = new NorthWest();
-        Algorithm vogelAlgorithm = new VogelAlgorithm();
-        Algorithm russelAlgorithm = new RusselAlgorithm();
-
-        solver.setAlgorithm(northWestAlgorithm);
+        solver.setAlgorithm(new NorthWest());
         Vector northWestSolution = solver.solve();
+        System.out.print("Initial basic feasible solution using North-West corner method: x = [");
+        for (int i = 0; i < northWestSolution.getLength(); i++) {
+            System.out.print(northWestSolution.get(i));
+            if (i == northWestSolution.getLength() - 1) System.out.print("]");
+            else System.out.print(", ");
+        }
 
-        solver.setAlgorithm(vogelAlgorithm);
+        solver.setAlgorithm(new VogelAlgorithm());
         Vector vogelSolution = solver.solve();
 
-        solver.setAlgorithm(russelAlgorithm);
+        solver.setAlgorithm(new RusselAlgorithm());
         Vector russelSolution = solver.solve();
     }
 
@@ -150,7 +152,25 @@ class TransportationProblem {
 class NorthWest implements Algorithm {
     @Override
     public Vector solve(Vector supply, Vector demand, Matrix costs) {
-        return supply;
+        Vector answer = VectorFactory.createEmptyVector(costs.getNumberOfRows() * costs.getNumberOfColumns());
+        int answerIndex = 0;
+
+        for (int rowIndex = 0; rowIndex < costs.getNumberOfRows(); rowIndex++) {
+            for (int columnIndex = 0; columnIndex < costs.getNumberOfColumns(); columnIndex++) {
+                if (supply.get(rowIndex) <= demand.get(columnIndex)) {
+                    answer.set(answerIndex, supply.get(rowIndex));
+                    answerIndex++;
+                    demand.set(columnIndex, demand.get(columnIndex) - supply.get(rowIndex));
+                    supply.set(rowIndex, 0);
+                } else {
+                    answer.set(answerIndex, demand.get(columnIndex));
+                    answerIndex++;
+                    supply.set(rowIndex, supply.get(rowIndex) - demand.get(columnIndex));
+                    demand.set(columnIndex, 0);
+                }
+            }
+        }
+        return answer;
     }
 }
 
