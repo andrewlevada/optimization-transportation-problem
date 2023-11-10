@@ -82,7 +82,7 @@ public class ArrayVector implements Vector {
 
     @Override
     public Iterator<Integer> iterator() {
-        return new Iterator<>() {
+        return new Iterator<Integer>() {
             private int index = 0;
 
             @Override
