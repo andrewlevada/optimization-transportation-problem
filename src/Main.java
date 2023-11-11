@@ -14,6 +14,7 @@ public class Main {
     public static void main(String[] args) {
         TransportationProblem solver = input();
         if (solver == null) return;
+        if (!solver.checkAdditionalRestrictions()) return;
 
         solver.printTransportationTable();
 
@@ -161,6 +162,14 @@ class TransportationProblem {
         System.out.println("---------------------------------------------------------------");
     }
 
+    public boolean checkAdditionalRestrictions() {
+        if (supply.getSum() != demand.getSum()) {
+            System.out.println("The problem is not balanced!");
+            return false;
+        }
+
+        return true;
+    }
 }
 
 class NorthWest implements Algorithm {
