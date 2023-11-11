@@ -4,7 +4,6 @@ import structures.Matrix;
 import structures.Vector;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -59,7 +58,7 @@ public class ArrayMatrix implements Matrix {
         if (this.rows != other.getNumberOfRows() || this.cols != other.getNumberOfColumns())
             throw new IllegalArgumentException();
 
-        return this.plus(scalarMultiply(other, -1));
+        return this.plus(negateMatrix(other));
     }
 
     @Override
@@ -165,50 +164,6 @@ public class ArrayMatrix implements Matrix {
     }
 
     @Override
-    public int getIndexOfMinInRow(int row) {
-        int minIndex = 0;
-
-        for (int i = 1; i < this.cols; i++)
-            if (this.values[row][i] < this.values[row][minIndex])
-                minIndex = i;
-
-        return minIndex;
-    }
-
-    @Override
-    public int getIndexOfMaxInRow(int row) {
-        int maxIndex = 0;
-
-        for (int i = 1; i < this.cols; i++)
-            if (this.values[row][i] > this.values[row][maxIndex])
-                maxIndex = i;
-
-        return maxIndex;
-    }
-
-    @Override
-    public int getIndexOfMinInColumn(int col) {
-        int minIndex = 0;
-
-        for (int i = 1; i < this.rows; i++)
-            if (this.values[i][col] < this.values[minIndex][col])
-                minIndex = i;
-
-        return minIndex;
-    }
-
-    @Override
-    public int getIndexOfMaxInColumn(int col) {
-        int maxIndex = 0;
-
-        for (int i = 1; i < this.rows; i++)
-            if (this.values[i][col] > this.values[maxIndex][col])
-                maxIndex = i;
-
-        return maxIndex;
-    }
-
-    @Override
     public int[] getCoordsOfMostNegative() {
         int[] coords = new int[2];
         int min = this.values[0][0];
@@ -235,12 +190,12 @@ public class ArrayMatrix implements Matrix {
         return result;
     }
 
-    private static Matrix scalarMultiply(Matrix matrix, int scalar) {
+    private static Matrix negateMatrix(Matrix matrix) {
         Matrix result = new ArrayMatrix(matrix.getNumberOfRows(), matrix.getNumberOfColumns());
 
         for (int i = 0; i < matrix.getNumberOfRows(); i++)
             for (int j = 0; j < matrix.getNumberOfColumns(); j++)
-                result.setItem(i, j, matrix.getItem(i, j) * scalar);
+                result.setItem(i, j, matrix.getItem(i, j) * -1);
 
         return result;
     }

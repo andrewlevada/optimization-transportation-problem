@@ -9,16 +9,6 @@ public class VectorFactory {
         return new ArrayVector(length);
     }
 
-    public static Vector createVector(int[] items) {
-        int n = items.length;
-
-        Vector result = new ArrayVector(n);
-        for (int i = 0; i < n ; i++)
-            result.set(i, items[i]);
-
-        return result;
-    }
-
     public static Vector createVectorFromInput(int length, Scanner scanner) {
         Vector vector = new ArrayVector(length);
 

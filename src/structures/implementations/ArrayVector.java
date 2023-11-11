@@ -34,7 +34,7 @@ public class ArrayVector implements Vector {
         if (this.length != other.getLength())
             throw new IllegalArgumentException();
 
-        return this.plus(scalarMultiply(other, -1));
+        return this.plus(negateVector(other));
     }
 
     @Override
@@ -102,7 +102,7 @@ public class ArrayVector implements Vector {
 
     @Override
     public Iterator<Integer> iterator() {
-        return new Iterator<Integer>() {
+        return new Iterator<>() {
             private int index = 0;
 
             @Override
@@ -117,11 +117,11 @@ public class ArrayVector implements Vector {
         };
     }
 
-    private static Vector scalarMultiply(Vector vector, int scalar) {
+    private static Vector negateVector(Vector vector) {
         Vector result = new ArrayVector(vector.getLength());
 
         for (int i = 0; i < vector.getLength(); i++)
-            result.set(i, vector.get(i) * scalar);
+            result.set(i, vector.get(i) * -1);
 
         return result;
     }

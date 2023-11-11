@@ -20,11 +20,6 @@ public interface Matrix {
     void setRow(int row, Vector vector);
     void setColumn(int col, Vector vector);
 
-    int getIndexOfMinInRow(int row);
-    int getIndexOfMaxInRow(int row);
-    int getIndexOfMinInColumn(int col);
-    int getIndexOfMaxInColumn(int col);
-
     int[] getCoordsOfMostNegative();
 
     Matrix buildClone();
