@@ -3,6 +3,7 @@ import structures.MatrixFactory;
 import structures.Vector;
 import structures.Matrix;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -18,18 +19,27 @@ public class Main {
 
         solver.setAlgorithm(new NorthWest());
         Vector northWestSolution = solver.solve();
-        System.out.print("Initial basic feasible solution using North-West corner method: x = [");
-        for (int i = 0; i < northWestSolution.getLength(); i++) {
-            System.out.print(northWestSolution.get(i));
-            if (i == northWestSolution.getLength() - 1) System.out.print("]");
-            else System.out.print(", ");
-        }
+        printSolution(northWestSolution, "North-West Corner");
 
         solver.setAlgorithm(new VogelAlgorithm());
         Vector vogelSolution = solver.solve();
+        printSolution(vogelSolution, "Vogel's Approximation");
 
         solver.setAlgorithm(new RusselAlgorithm());
         Vector russelSolution = solver.solve();
+        printSolution(russelSolution, "Russel's Approximation");
+    }
+
+    private static void printSolution(Vector solution, String algorithmName) {
+        System.out.print("Initial basic feasible solution using " + algorithmName + " method: x = [");
+
+        for (int i = 0; i < solution.getLength(); i++) {
+            System.out.print(solution.get(i));
+            if (i == solution.getLength() - 1) System.out.print("]");
+            else System.out.print(", ");
+        }
+
+        System.out.println();
     }
 
     private static TransportationProblem input() {
@@ -101,10 +111,14 @@ class TransportationProblem {
     }
 
     public Vector solve() {
-        if (algorithm == null) {
+        if (algorithm == null)
             throw new IllegalStateException("Algorithm not set.");
-        }
-        return algorithm.solve(supply, demand, costs);
+
+        Vector supplyClone = supply.buildClone();
+        Vector demandClone = demand.buildClone();
+        Matrix costsClone = costs.buildClone();
+
+        return algorithm.solve(supplyClone, demandClone, costsClone);
     }
 
     public void setAlgorithm(Algorithm algorithm) {
@@ -177,14 +191,126 @@ class NorthWest implements Algorithm {
 class VogelAlgorithm implements Algorithm {
     @Override
     public Vector solve(Vector supply, Vector demand, Matrix costs) {
-        return supply;
+        Vector answer = VectorFactory.createEmptyVector(costs.getNumberOfRows() * costs.getNumberOfColumns());
+
+        do {
+            Vector rowsDiffs = getDiffsForListOfVectors(costs.getRows());
+            Vector colsDiffs = getDiffsForListOfVectors(costs.getColumns());
+
+            Vector targetVector;
+            int maxRowDiffIndex = rowsDiffs.getMaxValueIndex();
+            int maxColDiffIndex = colsDiffs.getMaxValueIndex();
+
+            if (rowsDiffs.get(maxRowDiffIndex) > colsDiffs.get(maxColDiffIndex))
+                targetVector = costs.getRow(maxRowDiffIndex);
+            else targetVector = costs.getColumn(maxColDiffIndex);
+
+            int minIndex = -1;
+            for (int i = 0; i < targetVector.getLength(); i++) {
+                if (targetVector.get(i) == -1) continue;
+
+                if (minIndex == -1) minIndex = i;
+                else if (targetVector.get(i) < targetVector.get(minIndex)) minIndex = i;
+            }
+
+            int[] cellToPick = new int[2];
+            if (rowsDiffs.get(maxRowDiffIndex) > colsDiffs.get(maxColDiffIndex)) {
+                cellToPick[0] = maxRowDiffIndex;
+                cellToPick[1] = minIndex;
+            } else {
+                cellToPick[0] = minIndex;
+                cellToPick[1] = maxColDiffIndex;
+            }
+
+            int allocate = Math.min(supply.get(cellToPick[0]), demand.get(cellToPick[1]));
+            supply.set(cellToPick[0], supply.get(cellToPick[0]) - allocate);
+            demand.set(cellToPick[1], demand.get(cellToPick[1]) - allocate);
+            costs.setItem(cellToPick[0], cellToPick[1], -1);
+
+            answer.set(cellToPick[0] * costs.getNumberOfColumns() + cellToPick[1], allocate);
+
+        } while (supply.getSum() != 0 || demand.getSum() != 0);
+
+        return answer;
+    }
+
+    private Vector getDiffsForListOfVectors(List<Vector> vectors) {
+        Vector diffs = VectorFactory.createEmptyVector(vectors.size());
+
+        for (int i = 0; i < vectors.size(); i++) {
+            Vector item = vectors.get(i);
+            int min = Integer.MAX_VALUE;
+            int secondMin = Integer.MAX_VALUE;
+
+            for (int j = 0; j < item.getLength(); j++) {
+                int value = item.get(j);
+
+                if (value == -1) continue;
+
+                if (value < min) {
+                    secondMin = min;
+                    min = value;
+                } else if (value < secondMin) {
+                    secondMin = value;
+                }
+            }
+
+            diffs.set(i, secondMin - min);
+        }
+
+        return diffs;
     }
 }
 
 class RusselAlgorithm implements Algorithm {
     @Override
     public Vector solve(Vector supply, Vector demand, Matrix costs) {
-        return supply;
+        Vector answer = VectorFactory.createEmptyVector(costs.getNumberOfRows() * costs.getNumberOfColumns());
+
+        do {
+            Vector rowsMaxes = getMaxesForListOfVectors(costs.getRows());
+            Vector colsMaxes = getMaxesForListOfVectors(costs.getColumns());
+
+            Matrix scores = MatrixFactory.createEmptyMatrix(costs.getNumberOfRows(), costs.getNumberOfColumns());
+
+            for (int i = 0; i < costs.getNumberOfRows(); i++) {
+                for (int j = 0; j < costs.getNumberOfColumns(); j++) {
+                    if (costs.getItem(i, j) == -1) continue;
+                    scores.setItem(i, j, costs.getItem(i, j) - rowsMaxes.get(i) - colsMaxes.get(j));
+                }
+            }
+
+            int[] coordsOfMostNegative = scores.getCoordsOfMostNegative();
+
+            int allocate = Math.min(supply.get(coordsOfMostNegative[0]), demand.get(coordsOfMostNegative[1]));
+            supply.set(coordsOfMostNegative[0], supply.get(coordsOfMostNegative[0]) - allocate);
+            demand.set(coordsOfMostNegative[1], demand.get(coordsOfMostNegative[1]) - allocate);
+            costs.setItem(coordsOfMostNegative[0], coordsOfMostNegative[1], -1);
+
+            answer.set(coordsOfMostNegative[0] * costs.getNumberOfColumns() + coordsOfMostNegative[1], allocate);
+
+        } while (supply.getSum() != 0 || demand.getSum() != 0);
+
+        return answer;
+    }
+
+    private Vector getMaxesForListOfVectors(List<Vector> vectors) {
+        Vector maxes = VectorFactory.createEmptyVector(vectors.size());
+
+        for (int i = 0; i < vectors.size(); i++) {
+            Vector item = vectors.get(i);
+            int max = Integer.MIN_VALUE;
+
+            for (int j = 0; j < item.getLength(); j++) {
+                int value = item.get(j);
+                if (value == -1) continue;
+                if (value > max) max = value;
+            }
+
+            maxes.set(i, max);
+        }
+
+        return maxes;
     }
 }
 

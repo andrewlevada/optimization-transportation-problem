@@ -3,6 +3,10 @@ package structures.implementations;
 import structures.Matrix;
 import structures.Vector;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Class of Matrices
  */
@@ -56,6 +60,26 @@ public class ArrayMatrix implements Matrix {
             throw new IllegalArgumentException();
 
         return this.plus(scalarMultiply(other, -1));
+    }
+
+    @Override
+    public List<Vector> getRows() {
+        List<Vector> rows = new ArrayList<>();
+
+        for (int i = 0; i < this.rows; i++)
+            rows.add(this.getRow(i));
+
+        return rows;
+    }
+
+    @Override
+    public List<Vector> getColumns() {
+        List<Vector> cols = new ArrayList<>();
+
+        for (int i = 0; i < this.cols; i++)
+            cols.add(this.getColumn(i));
+
+        return cols;
     }
 
     /**
@@ -198,6 +222,17 @@ public class ArrayMatrix implements Matrix {
                 }
 
         return coords;
+    }
+
+    @Override
+    public Matrix buildClone() {
+        Matrix result = new ArrayMatrix(this.rows, this.cols);
+
+        for (int i = 0; i < this.rows; i++)
+            for (int j = 0; j < this.cols; j++)
+                result.setItem(i, j, this.values[i][j]);
+
+        return result;
     }
 
     private static Matrix scalarMultiply(Matrix matrix, int scalar) {

@@ -1,8 +1,13 @@
 package structures;
 
+import java.util.List;
+
 public interface Matrix {
     Matrix plus(Matrix other);
     Matrix minus(Matrix other);
+
+    List<Vector> getRows();
+    List<Vector> getColumns();
 
     int getItem(int row, int col);
     Vector getRow(int row);
@@ -21,4 +26,6 @@ public interface Matrix {
     int getIndexOfMaxInColumn(int col);
 
     int[] getCoordsOfMostNegative();
+
+    Matrix buildClone();
 }

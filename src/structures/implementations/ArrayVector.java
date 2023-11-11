@@ -54,6 +54,16 @@ public class ArrayVector implements Vector {
     }
 
     @Override
+    public int getSum() {
+        int sum = 0;
+
+        for (int i = 0; i < length; i++)
+            sum += values[i];
+
+        return sum;
+    }
+
+    @Override
     public int getLength() {
         return this.length;
     }
@@ -78,6 +88,16 @@ public class ArrayVector implements Vector {
                 maxIndex = i;
 
         return maxIndex;
+    }
+
+    @Override
+    public Vector buildClone() {
+        Vector result = new ArrayVector(this.length);
+
+        for (int i = 0; i < this.length; i++)
+            result.set(i, this.values[i]);
+
+        return result;
     }
 
     @Override

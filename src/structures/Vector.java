@@ -7,7 +7,10 @@ public interface Vector extends Iterable<Integer> {
     int get(int index);
     void set(int index, int value);
 
+    int getSum();
     int getLength();
     int getMinValueIndex();
     int getMaxValueIndex();
+
+    Vector buildClone();
 }
