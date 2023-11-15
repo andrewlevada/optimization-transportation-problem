@@ -205,11 +205,6 @@ class TransportationProblem {
      * @return true if applicable, false otherwise
      */
     public boolean checkAdditionalRestrictions() {
-        if (supply.getSum() != demand.getSum()) {
-            System.out.println("The problem is not balanced!");
-            return false;
-        }
-
         for (int i = 0; i < supply.getLength(); i++)
             if (supply.get(i) < 0) {
                 System.out.println("The method is not applicable!");
@@ -224,6 +219,11 @@ class TransportationProblem {
 
         if (supply.getSum() == 0 || demand.getSum() == 0) {
             System.out.println("The method is not applicable!");
+            return false;
+        }
+
+        if (supply.getSum() != demand.getSum()) {
+            System.out.println("The problem is not balanced!");
             return false;
         }
 
